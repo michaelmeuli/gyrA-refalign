@@ -50,7 +50,8 @@ def main() -> None:
     df.insert(1, "bioproject", df["sample"].map(lambda x: meta[x][0]))
     df.insert(2, "gtdb_species", df["sample"].map(lambda x: meta[x][1]))
     df["gyrA_matches_gtdb"] = df["closest_species"] == df["gtdb_species"]
-    df.sort_values(["bioproject", "sample"]).to_csv(args.out / "samples.tsv", sep="\t", index=False)
+    df = df.sort_values(["bioproject", "sample"]).reset_index(drop=True)  # imap_unordered order is not stable
+    df.to_csv(args.out / "samples.tsv", sep="\t", index=False)
 
     ok = df[df["status"] == "ok"]
     lines = [f"public samples in the complex (GTDB): {len(df)}", "GTDB species: " + str(df["gtdb_species"].value_counts().to_dict()),
