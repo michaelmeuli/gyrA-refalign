@@ -6,32 +6,46 @@ Project isolates only: writes OUTPUT_PROJECT/isolates.tsv and SUMMARY.txt.
 """
 from __future__ import annotations
 
+import argparse
 import os
+import sys
+from pathlib import Path
 
 import pandas as pd
 
-from gyrA_refalign import ASSEMBLIES, HSP65_ISOLATES, OUTPUT_PROJECT, REFERENCE_STRAINS, SCREENING_RESULTS
-from gyrA_refalign.gyra import call_many
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo root: the gyrA_refalign package
+
+from gyrA_refalign import HSP65_ISOLATES, OUTPUT_PROJECT  # noqa: E402
+from gyrA_refalign.gyra import call_many  # noqa: E402
+from gyrA_refalign.kansasii_paths import (ASSEMBLIES, GYRA_REFERENCES, REFERENCE_STRAINS,  # noqa: E402
+                                          SCREENING_MAP_RESULTS)
 
 
 def main() -> None:
-    OUTPUT_PROJECT.mkdir(parents=True, exist_ok=True)
-    s = pd.read_csv(SCREENING_RESULTS, dtype=str).fillna("")
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--gyra-references", type=Path, default=GYRA_REFERENCES, help="<accession>_gyrA.fasta of the 72 genomes (from 01)")
+    ap.add_argument("--screening-map-results", type=Path, default=SCREENING_MAP_RESULTS)
+    ap.add_argument("--assemblies", type=Path, default=ASSEMBLIES)
+    ap.add_argument("--hsp65-isolates", type=Path, default=HSP65_ISOLATES, help="hsp65-refalign isolates.tsv, optional")
+    ap.add_argument("--out", type=Path, default=OUTPUT_PROJECT)
+    args = ap.parse_args()
+    args.out.mkdir(parents=True, exist_ok=True)
+    s = pd.read_csv(args.screening_map_results, dtype=str).fillna("")
     s = s[~s["PROBENNUMMER"].isin(REFERENCE_STRAINS) & (s["PROBENNUMMER"] != "")]
-    items = [(pn, ASSEMBLIES / pn / "1_unicycler" / f"{pn}.fasta") for pn in s["PROBENNUMMER"]]
+    items = [(pn, args.assemblies / pn / "1_unicycler" / f"{pn}.fasta") for pn in s["PROBENNUMMER"]]
     items = [(pn, p) for pn, p in items if p.exists()]
-    calls = call_many(items, int(os.environ.get("SLURM_CPUS_PER_TASK", "1")))
+    calls = call_many(items, int(os.environ.get("SLURM_CPUS_PER_TASK", "1")), args.gyra_references)
     df = pd.DataFrame.from_dict(calls, orient="index").rename_axis("probennummer").reset_index()
     meta = s.rename(columns={"PROBENNUMMER": "probennummer", "species": "wgs_species"})
     meta["contaminated"] = meta["contamination_flag"] != ""
     keep = ["probennummer", "wgs_species", "gtdb_ani", "contaminated", "species_sanger_mlsa", "species_sanger_refalign"]
     df = meta[keep].merge(df, on="probennummer", how="inner")
-    if HSP65_ISOLATES.exists():
-        h = pd.read_csv(HSP65_ISOLATES, sep="\t", dtype=str).fillna("")
+    if args.hsp65_isolates.exists():
+        h = pd.read_csv(args.hsp65_isolates, sep="\t", dtype=str).fillna("")
         df = df.merge(h[["probennummer", "called_species", "verdict"]].rename(
             columns={"called_species": "hsp65_species", "verdict": "hsp65_verdict"}), on="probennummer", how="left")
     df["gyrA_matches_wgs"] = df["closest_species"] == df["wgs_species"]
-    df.to_csv(OUTPUT_PROJECT / "isolates.tsv", sep="\t", index=False)
+    df.to_csv(args.out / "isolates.tsv", sep="\t", index=False)
 
     clean = df[~df["contaminated"]]
     lines = [f"project isolates (reference strains 126-133 excluded): {len(df)}; uncontaminated: {len(clean)}",
@@ -53,7 +67,7 @@ def main() -> None:
                  f"exact match to a public genome: {int((kans['exact_match'] != '').sum())}")
     lines.append("hsp65 persicum-like but gyrA kansasii: " + (", ".join(
         df[(df.get("hsp65_species", "") == "persicum") & (df["closest_species"] == "kansasii")]["probennummer"]) or "none"))
-    (OUTPUT_PROJECT / "SUMMARY.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (args.out / "SUMMARY.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
 
 

@@ -6,13 +6,18 @@ OUTPUT_PUBLIC/reference_genomes.tsv from 01. Writes OUTPUT_PUBLIC/samples.tsv an
 """
 from __future__ import annotations
 
+import argparse
 import os
+import sys
 from pathlib import Path
 
 import pandas as pd
 
-from gyrA_refalign import OUTPUT_PUBLIC, PUBLIC_RUNS, RUNS, SPECIES
-from gyrA_refalign.gyra import call_many
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo root: the gyrA_refalign package
+
+from gyrA_refalign import OUTPUT_PUBLIC  # noqa: E402
+from gyrA_refalign.gyra import call_many  # noqa: E402
+from gyrA_refalign.kansasii_paths import GYRA_REFERENCES, PUBLIC_PROJECTS, SPECIES, public_assemblies  # noqa: E402
 
 
 def gtdb_species(summary: str) -> str:
@@ -21,26 +26,31 @@ def gtdb_species(summary: str) -> str:
 
 
 def main() -> None:
-    OUTPUT_PUBLIC.mkdir(parents=True, exist_ok=True)
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("projects", nargs="*", default=PUBLIC_PROJECTS, help="public BioProjects (default: the four of the project)")
+    ap.add_argument("--gyra-references", type=Path, default=GYRA_REFERENCES, help="<accession>_gyrA.fasta of the 72 genomes (from 01)")
+    ap.add_argument("--out", type=Path, default=OUTPUT_PUBLIC)
+    args = ap.parse_args()
+    args.out.mkdir(parents=True, exist_ok=True)
     meta: dict[str, tuple[str, str]] = {}
     items: list[tuple[str, Path]] = []
-    for run in PUBLIC_RUNS:
-        for d in sorted((RUNS / run / "assembly" / "results").iterdir()):
+    for run in args.projects:
+        for d in sorted(public_assemblies(run).iterdir()):
             summ = list((d / "3_quality" / "GTDB").glob("*_gtdb_summary.tsv"))
             fasta = d / "1_unicycler" / f"{d.name}.fasta"
             if not summ or not fasta.exists():
                 continue
             sp = gtdb_species(str(summ[0]))
             if sp in SPECIES:
-                meta[d.name] = (run.removeprefix("public_"), sp)
+                meta[d.name] = (run, sp)
                 items.append((d.name, fasta))
     print(f"{len(items)} public samples in the complex", flush=True)
-    calls = call_many(items, int(os.environ.get("SLURM_CPUS_PER_TASK", "1")))
+    calls = call_many(items, int(os.environ.get("SLURM_CPUS_PER_TASK", "1")), args.gyra_references)
     df = pd.DataFrame.from_dict(calls, orient="index").rename_axis("sample").reset_index()
     df.insert(1, "bioproject", df["sample"].map(lambda x: meta[x][0]))
     df.insert(2, "gtdb_species", df["sample"].map(lambda x: meta[x][1]))
     df["gyrA_matches_gtdb"] = df["closest_species"] == df["gtdb_species"]
-    df.sort_values(["bioproject", "sample"]).to_csv(OUTPUT_PUBLIC / "samples.tsv", sep="\t", index=False)
+    df.sort_values(["bioproject", "sample"]).to_csv(args.out / "samples.tsv", sep="\t", index=False)
 
     ok = df[df["status"] == "ok"]
     lines = [f"public samples in the complex (GTDB): {len(df)}", "GTDB species: " + str(df["gtdb_species"].value_counts().to_dict()),
@@ -55,7 +65,7 @@ def main() -> None:
     k = df[df["gtdb_species"] == "kansasii"]
     lines.append(f"kansasii (GTDB): {len(k)} samples, {k['haplotype'].nunique()} gyrA haplotypes; "
                  f"exact match to a reference genome: {int((k['exact_match'] != '').sum())}")
-    (OUTPUT_PUBLIC / "SAMPLES_SUMMARY.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (args.out / "SAMPLES_SUMMARY.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
 
 
