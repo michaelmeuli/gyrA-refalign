@@ -1,0 +1,11 @@
+# Uses the shared env_mlsa (the subset needed here); the full list is mlsa-kansasii/environment.yml.
+name: env_mlsa
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - biopython
+  - pandas
+  - numpy
+  - matplotlib

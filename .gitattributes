@@ -1,0 +1,42 @@
+# Always use LF in the working tree (also on Windows checkouts).
+* text=auto eol=lf
+
+# Executed on the cluster: must never get CRLF.
+*.sh        text eol=lf
+*.sbatch    text eol=lf
+*.nf        text eol=lf
+*.config    text eol=lf
+*.py        text eol=lf
+*.R         text eol=lf
+*.Rmd       text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.toml      text eol=lf
+Singularity text eol=lf
+Dockerfile* text eol=lf
+.githooks/* text eol=lf
+
+# Windows-only scripts: keep LF; PowerShell 5+ handles it.
+*.ps1       text eol=lf
+
+# Data/tables: no EOL conversion surprises, no whitespace diff noise.
+*.tsv       text eol=lf
+*.csv       text eol=lf
+*.json      text eol=lf
+
+# Binary: never touch, never diff as text.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.pdf  binary
+*.docx binary
+*.xlsx binary
+*.pptx binary
+*.gz   binary
+*.zip  binary
+*.img  binary
+*.sif  binary
+*.bam  binary
+*.cram binary
+*.bai  binary

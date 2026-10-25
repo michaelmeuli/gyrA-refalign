@@ -1,0 +1,9 @@
+# Type-checking config only (this repo is not packaged).
+# Run: mypy   (from the repo root, in an env with mypy + pandas-stubs)
+[tool.mypy]
+strict = true
+python_version = "3.11"
+files = ["gyrA_refalign", "01_make_gyrA_references.py", "02_call_project.py", "03_call_public.py"]
+explicit_package_bases = true
+# Biopython ships py.typed but leaves many functions unannotated.
+untyped_calls_exclude = ["Bio"]
