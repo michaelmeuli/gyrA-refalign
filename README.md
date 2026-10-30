@@ -6,9 +6,9 @@ Project isolates and public data are analysed and written separately.
 
 | Step | Script | Output |
 |---|---|---|
-| 1 | `scripts/01_make_gyrA_references.py`: gyrA of the 72 public GTDB genomes (probe = *M. persicum* GCF_002086675.1 gyrA CDS laid over each genome), leave-one-out check | `output/gyrA_refalign/public/reference_genomes.tsv`, `REFERENCES_SUMMARY.txt`; references in `data/gtdb_genomes/Mycobacteriaceae/kansasii_complex_gyrA/` |
-| 2 | `scripts/02_call_project.py`: Mkan329-* assemblies (reference strains 126-133 excluded) | `output/gyrA_refalign/project/isolates.tsv`, `SUMMARY.txt` |
-| 3 | `scripts/03_call_public.py`: `runs/public_PRJNA*` samples that GTDB puts in the complex | `output/gyrA_refalign/public/samples.tsv`, `SAMPLES_SUMMARY.txt` |
+| 1 | `scripts/01_make_gyrA_references.py`: gyrA of the 72 public GTDB genomes (probe = *M. persicum* GCF_002086675.1 gyrA CDS laid over each genome), leave-one-out check | `output/gyrA-refalign/results/public/reference_genomes.tsv`, `REFERENCES_SUMMARY.txt`; references in `data/gtdb_genomes/Mycobacteriaceae/kansasii_complex_gyrA/` |
+| 2 | `scripts/02_call_project.py`: Mkan329-* assemblies (reference strains 126-133 excluded) | `output/gyrA-refalign/results/project/isolates.tsv`, `SUMMARY.txt` |
+| 3 | `scripts/03_call_public.py`: `runs/public_PRJNA*` samples that GTDB puts in the complex | `output/gyrA-refalign/results/public/samples.tsv`, `SAMPLES_SUMMARY.txt` |
 
 Run: `sbatch submit_gyrA.sbatch` (~30 min, 8 CPUs, env_mlsa). Status per sample: `ok`, `ambiguous` (second species within 2
 differences), `divergent` (< 98% identity to every reference), `low_coverage` (< 95% of the probe placed), `no_hit`.
@@ -24,4 +24,4 @@ differences), `divergent` (< 98% identity to every reference), `low_coverage` (<
 - `gyrA_refalign/refalign.py` is a vendored copy of hsp65-refalign's; keep matching logic in sync by hand.
 - Reads `data/imm/screening_map_results.csv` (`SCREENING_MAP_RESULTS`) like every repo; the copy in `output/` is for download only.
 - Layout: `gyrA_refalign/` (package, vendored `kansasii_paths.py`), `scripts/01-03`, `submit_gyrA.sbatch`. Paths are flags: `--complex-genomes`, `--gyra-references`, `--assemblies`, `--screening-map-results`, `--hsp65-isolates`, `--out`.
-- The samples that differ from their species label at gyrA (or at hsp65) are collected in `output/atypical_samples/` and explained in `kansasii-docs/docs/ATYPICAL.md`.
+- The samples that differ from their species label at gyrA (or at hsp65) are collected in `output/kansasii-docs/results/atypical_samples/` and explained in `kansasii-docs/docs/ATYPICAL.md`.

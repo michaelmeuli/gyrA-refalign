@@ -34,6 +34,18 @@ REPOS = ROOT / "repos"
 DATA = ROOT / "data"
 RUNS = ROOT / "runs"
 OUTPUT_ROOT = ROOT / "output"  # one directory per repo or analysis below it; a repo's own is `OUTPUT`
+# One directory per repo below OUTPUT_ROOT, named exactly like the repo. Inside: results/ (analysis dirs), logs/, MANIFEST.txt.
+OUT_AMR = OUTPUT_ROOT / "kansasii-amr-marker-screen"
+OUT_CGMLST = OUTPUT_ROOT / "kansasii-cgmlst"
+OUT_DOCS = OUTPUT_ROOT / "kansasii-docs"
+OUT_GWAS = OUTPUT_ROOT / "kansasii-gwas"
+OUT_MIC = OUTPUT_ROOT / "kansasii-mic"
+OUT_MST = OUTPUT_ROOT / "kansasii-mst"
+OUT_MLSA = OUTPUT_ROOT / "mlsa-kansasii"
+OUT_GYRA = OUTPUT_ROOT / "gyrA-refalign"
+OUT_HSP65 = OUTPUT_ROOT / "hsp65-refalign"
+OUT_IMM = OUTPUT_ROOT / "immensekansasii"
+OUT_MICROSYNTH = OUTPUT_ROOT / "sanger-microsynth"
 MANIFEST_SCRIPT = REPOS / "kansasii-docs" / "bin" / "write_manifest.sh"
 
 # ---------------------------------------------------------------------------------------------- reference genomes
@@ -50,7 +62,7 @@ GYRA_REFERENCES = GTDB_DIR / "kansasii_complex_gyrA"
 # GTDB release tables (downloaded by immensekansasii/scripts/01 and mlsa-kansasii/scripts/01) and the accession lists made from them
 GTDB_RELEASE = "232"
 GTDB_METADATA_DIR = DATA / "immensekansasii" / "gtdb" / f"gtdb{GTDB_RELEASE}"
-GTDB_ACCESSIONS_DIR = OUTPUT_ROOT / "immensekansasii" / "gtdb" / f"gtdb{GTDB_RELEASE}"
+GTDB_ACCESSIONS_DIR = OUT_IMM / "gtdb" / f"gtdb{GTDB_RELEASE}"
 # M. kansasii ATCC 12478, the snippy / cgMLST / marker-screen reference
 ATCC12478_ACCESSION = "GCF_000157895.3"
 ATCC12478_DIR = NCBI_DATASET / ATCC12478_ACCESSION
