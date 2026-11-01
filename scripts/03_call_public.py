@@ -63,9 +63,15 @@ def main() -> None:
                      f"({w['identity']}, margin {w['margin']}, {w['status']})")
     for _, w in df[~df["status"].isin(["ok"])].iterrows():
         lines.append(f"  {w['status']}: {w['sample']} ({w['bioproject']}) GTDB {w['gtdb_species']} coverage {w['gyrA_coverage']} identity {w['identity']}")
-    k = df[df["gtdb_species"] == "kansasii"]
-    lines.append(f"kansasii (GTDB): {len(k)} samples, {k['haplotype'].nunique()} gyrA haplotypes; "
-                 f"exact match to a reference genome: {int((k['exact_match'] != '').sum())}")
+    # haplotype statistics over callable samples only: an uncallable sample has no haplotype
+    novel = ok[ok["exact_match"] == ""]
+    lines.append(f"callable samples without an exact gyrA match among the reference genomes (novel haplotype): {len(novel)}, "
+                 f"of which the gyrA call equals the GTDB species: {int(novel['gyrA_matches_gtdb'].sum())}")
+    k = ok[ok["gtdb_species"] == "kansasii"]
+    k_all = int((df["gtdb_species"] == "kansasii").sum())
+    k_exact = int((k["exact_match"] != "").sum())
+    lines.append(f"kansasii (GTDB): {k_all} samples, {len(k)} callable, {k['haplotype'].nunique()} gyrA haplotypes among the callable; "
+                 f"exact match to a reference genome: {k_exact}, novel haplotype: {len(k) - k_exact}")
     (args.out / "SAMPLES_SUMMARY.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
 
