@@ -100,8 +100,10 @@ IMMENSE_DB_ROOT = IMMENSE_DEPENDENCIES / "databases" / "kansasii_complex"  # sni
 # ------------------------------------------------------------------------------------------- species and samples
 # order of the species in matrices and legends; the 7th, gastri, is public references only (no project isolate)
 SPECIES = ["kansasii", "persicum", "pseudokansasii", "innocens", "attenuatum", "ostraviense", "gastri"]
-# species that count as the complex in cohort analyses (MST, cgMLST, markers)
-COMPLEX = ["kansasii", "persicum", "pseudokansasii", "attenuatum", "innocens", "ostraviense"]
+# all species of the M. kansasii complex, gastri included
+COMPLEX = set(SPECIES)
+# species with project isolates, used to select samples in cohort analyses (MST, cgMLST, Ridom); no gastri
+COHORT_SPECIES = ["kansasii", "persicum", "pseudokansasii", "attenuatum", "innocens", "ostraviense"]
 # fixed colour per species, so figures of all repos stay comparable
 SPECIES_COLORS = {"kansasii": "#1b9e77", "persicum": "#d95f02", "pseudokansasii": "#7570b3", "innocens": "#e7298a",
                   "attenuatum": "#66a61e", "ostraviense": "#e6ab02", "gastri": "#a6761d"}
