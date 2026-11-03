@@ -7,4 +7,5 @@ HSP65_ISOLATES = OUT_HSP65 / "results" / "isolates.tsv"  # output of hsp65-refal
 OUTPUT = OUT_GYRA / "results"
 OUTPUT_PROJECT = OUTPUT / "project"  # Mkan329-* isolates only
 OUTPUT_PUBLIC = OUTPUT / "public"    # public reference genomes and public WGS runs only
+PUBLIC_MAX_CONTAMINATION = 5.0  # CheckM contamination (%) above which a public sample is left out of every result
 OUTPUT_PUBLIC_READS = OUTPUT / "public_reads"  # read-level check of the public gyrA disagreements (04)

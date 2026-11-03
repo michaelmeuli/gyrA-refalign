@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import re
 import subprocess
 from pathlib import Path
 
@@ -43,3 +44,14 @@ def map_reads(ref: Path, r1: Path, r2: Path, threads: int = 4) -> str:
     if bwa.wait() != 0 or view.returncode != 0:
         raise RuntimeError(f"bwa mem | samtools view failed (bwa {bwa.returncode}, samtools {view.returncode}): {view.stderr.strip()[:300]}")
     return view.stdout
+
+
+def checkm_contamination(assembly_dir: Path, sample: str) -> float | None:
+    """CheckM contamination (%) of a public sample from its 3_quality/checkM table; None if the table is missing."""
+    f = assembly_dir / sample / "3_quality" / "checkM" / "checkm_output.tsv"
+    if not f.exists():
+        return None
+    for line in f.read_text().splitlines():
+        if re.match(rf"\s+{re.escape(sample)}\s", line):
+            return float(line.split()[-2])  # ... Completeness  Contamination  Strain heterogeneity
+    return None

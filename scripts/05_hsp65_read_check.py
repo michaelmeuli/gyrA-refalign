@@ -22,9 +22,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo root: the gyrA_refalign package
 
-from gyrA_refalign import OUTPUT_PUBLIC, OUTPUT_PUBLIC_READS  # noqa: E402
-from gyrA_refalign.kansasii_paths import ATYPICAL_HSP65_GENOMES, HSP65_AMPLICONS, PUBLIC_READS  # noqa: E402
-from gyrA_refalign.tools import map_reads, read_fasta, read_tsv, run  # noqa: E402
+from gyrA_refalign import OUTPUT_PUBLIC, OUTPUT_PUBLIC_READS, PUBLIC_MAX_CONTAMINATION  # noqa: E402
+from gyrA_refalign.kansasii_paths import ATYPICAL_HSP65_GENOMES, HSP65_AMPLICONS, PUBLIC_READS, public_assemblies  # noqa: E402
+from gyrA_refalign.tools import checkm_contamination, map_reads, read_fasta, read_tsv, run  # noqa: E402
 
 MAP_REF = "GCF_000157895.3"  # M. kansasii ATCC 12478, the kansasii reference strain
 MIN_BASEQ = 20
@@ -101,6 +101,7 @@ def main() -> None:
     ap.add_argument("--samples", type=Path, default=OUTPUT_PUBLIC / "samples.tsv")
     ap.add_argument("--references", type=Path, default=OUTPUT_PUBLIC / "reference_genomes.tsv")
     ap.add_argument("--extra", nargs="*", default=["SRR28038296"], help="further public samples (default: the Korean-type kansasii SRR28038296)")
+    ap.add_argument("--max-contamination", type=float, default=PUBLIC_MAX_CONTAMINATION, help="CheckM contamination (%%) above which a sample is excluded")
     ap.add_argument("--out", type=Path, default=OUTPUT_PUBLIC_READS)
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
@@ -111,6 +112,13 @@ def main() -> None:
         roles.setdefault(r["sample"], r["role"])
     for s in args.extra:
         roles.setdefault(s, "extra")
+    excluded: list[str] = []
+    for s in list(roles):
+        c = checkm_contamination(public_assemblies(meta[s]["bioproject"]), s)
+        if c is None or c > args.max_contamination:
+            excluded.append(f"{s} (CheckM contamination {'n/a' if c is None else f'{c:.2f}'} %)")
+            del roles[s]
+    print(f"excluded as contaminated: {excluded or 'none'}", flush=True)
     species = {r["accession"]: r["gtdb_species"] for r in read_tsv(args.references)}
     amplicons = {p.name.removesuffix("_hsp65.fasta"): next(iter(read_fasta(p).values())) for p in sorted(HSP65_AMPLICONS.glob("*_hsp65.fasta"))}
     ref_len = len(amplicons[MAP_REF])
@@ -166,6 +174,7 @@ def main() -> None:
     lines = [f"hsp65 amplicon ({ref_len} bp) from reads, consensus: base quality >= {MIN_BASEQ}, MAPQ >= {MIN_MAPQ}, depth >= {MIN_DEPTH}, "
              f"called if major base >= {CALL_FRAC}; {len(refs)} reference amplicons; Korean-type = {', '.join(korean)}",
              "diffs = differences/compared columns to the closest reference of that group",
+             f"excluded (CheckM contamination > {args.max_contamination} % or missing): {', '.join(excluded) or 'none'}",
              "sample\trole\tGTDB\ttypical kansasii\tKorean-type\tpersicum\tclosest species (72), margin"]
     for r in rows:
         lines.append(f"{r['sample']}\t{r['role']}\t{r['gtdb_species']}\t{r['diffs_typical_kansasii']}\t{r['diffs_korean_type']}\t"

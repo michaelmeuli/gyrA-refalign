@@ -15,9 +15,10 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo root: the gyrA_refalign package
 
-from gyrA_refalign import OUTPUT_PUBLIC  # noqa: E402
+from gyrA_refalign import OUTPUT_PUBLIC, PUBLIC_MAX_CONTAMINATION  # noqa: E402
 from gyrA_refalign.gyra import call_many  # noqa: E402
 from gyrA_refalign.kansasii_paths import GYRA_REFERENCES, PUBLIC_PROJECTS, SPECIES, public_assemblies  # noqa: E402
+from gyrA_refalign.tools import checkm_contamination  # noqa: E402
 
 
 def gtdb_species(summary: str) -> str:
@@ -29,11 +30,15 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("projects", nargs="*", default=PUBLIC_PROJECTS, help="public BioProjects (default: the four of the project)")
     ap.add_argument("--gyra-references", type=Path, default=GYRA_REFERENCES, help="<accession>_gyrA.fasta of the 72 genomes (from 01)")
+    ap.add_argument("--max-contamination", type=float, default=PUBLIC_MAX_CONTAMINATION,
+                    help="CheckM contamination (%%) above which a sample is left out of all results (written to excluded_contaminated.tsv)")
     ap.add_argument("--out", type=Path, default=OUTPUT_PUBLIC)
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     meta: dict[str, tuple[str, str]] = {}
     items: list[tuple[str, Path]] = []
+    contam: dict[str, float | None] = {}
+    excluded: list[dict[str, str]] = []
     for run in args.projects:
         for d in sorted(public_assemblies(run).iterdir()):
             summ = list((d / "3_quality" / "GTDB").glob("*_gtdb_summary.tsv"))
@@ -42,19 +47,29 @@ def main() -> None:
                 continue
             sp = gtdb_species(str(summ[0]))
             if sp in SPECIES:
+                c = checkm_contamination(public_assemblies(run), d.name)
+                if c is not None and c > args.max_contamination:
+                    excluded.append({"sample": d.name, "bioproject": run, "gtdb_species": sp, "checkm_contamination": f"{c:.2f}"})
+                    continue
+                contam[d.name] = c  # None = no CheckM result: kept, and counted as not assessed
                 meta[d.name] = (run, sp)
                 items.append((d.name, fasta))
-    print(f"{len(items)} public samples in the complex", flush=True)
+    print(f"{len(items)} public samples in the complex; {len(excluded)} left out as contaminated (CheckM > {args.max_contamination} %)", flush=True)
+    pd.DataFrame(excluded, columns=["sample", "bioproject", "gtdb_species", "checkm_contamination"]).sort_values(["bioproject", "sample"]).to_csv(
+        args.out / "excluded_contaminated.tsv", sep="\t", index=False)
     calls = call_many(items, int(os.environ.get("SLURM_CPUS_PER_TASK", "1")), args.gyra_references)
     df = pd.DataFrame.from_dict(calls, orient="index").rename_axis("sample").reset_index()
     df.insert(1, "bioproject", df["sample"].map(lambda x: meta[x][0]))
     df.insert(2, "gtdb_species", df["sample"].map(lambda x: meta[x][1]))
+    df.insert(3, "checkm_contamination", df["sample"].map(lambda x: "" if contam[x] is None else f"{contam[x]:.2f}"))
     df["gyrA_matches_gtdb"] = df["closest_species"] == df["gtdb_species"]
     df = df.sort_values(["bioproject", "sample"]).reset_index(drop=True)  # imap_unordered order is not stable
     df.to_csv(args.out / "samples.tsv", sep="\t", index=False)
 
     ok = df[df["status"] == "ok"]
-    lines = [f"public samples in the complex (GTDB): {len(df)}", "GTDB species: " + str(df["gtdb_species"].value_counts().to_dict()),
+    n_unassessed = int((df["checkm_contamination"] == "").sum())
+    lines = [f"public samples in the complex (GTDB), CheckM contamination <= {args.max_contamination} %: {len(df)} "
+             f"(left out as contaminated: {len(excluded)}, see excluded_contaminated.tsv; kept without a CheckM result: {n_unassessed})","GTDB species: " + str(df["gtdb_species"].value_counts().to_dict()),
              "gyrA status: " + str(df["status"].value_counts().to_dict()),
              f"gyrA call = GTDB species (status ok): {int(ok['gyrA_matches_gtdb'].sum())}/{len(ok)}",
              f"persicum-like gyrA: {int(df['persicum_like'].sum())} (GTDB persicum: {int((df['gtdb_species'] == 'persicum').sum())})"]

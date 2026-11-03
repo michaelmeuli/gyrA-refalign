@@ -24,11 +24,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo root: the gyrA_refalign package
 
-from gyrA_refalign import OUTPUT_PUBLIC, OUTPUT_PUBLIC_READS  # noqa: E402
-from gyrA_refalign.kansasii_paths import GYRA_REFERENCES, OUT_MLSA, PUBLIC_READS  # noqa: E402
-from gyrA_refalign.tools import read_fasta, read_tsv, run  # noqa: E402
+from gyrA_refalign import OUTPUT_PUBLIC, OUTPUT_PUBLIC_READS, PUBLIC_MAX_CONTAMINATION  # noqa: E402
+from gyrA_refalign.kansasii_paths import GYRA_REFERENCES, OUT_MLSA, PUBLIC_READS, public_assemblies  # noqa: E402
+from gyrA_refalign.tools import checkm_contamination, read_fasta, read_tsv, run  # noqa: E402
 
-LOCI = ["gyrA", "hsp65", "rpoB", "recA", "tuf"]
+LOCI = ["gyrA", "rpoB", "recA", "tuf"]  # hsp65 is done in 05 on the whole amplicon; one fixed site is too few
 LOCUS_ALIGNMENTS = OUT_MLSA / "results" / "locus_discovery" / "alignments"  # <locus>.raw.fasta, headers species__accession
 MIN_BASEQ = 20
 MIN_MAPQ = 20
@@ -171,6 +171,7 @@ def main() -> None:
     ap.add_argument("--references", type=Path, default=OUTPUT_PUBLIC / "reference_genomes.tsv")
     ap.add_argument("--gyra-references", type=Path, default=GYRA_REFERENCES)
     ap.add_argument("--controls", type=int, default=1, help="concordant controls per species (default 1)")
+    ap.add_argument("--max-contamination", type=float, default=PUBLIC_MAX_CONTAMINATION, help="CheckM contamination (%%) above which a sample is excluded")
     ap.add_argument("--out", type=Path, default=OUTPUT_PUBLIC_READS)
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
@@ -178,15 +179,26 @@ def main() -> None:
     rows = read_tsv(args.samples)
     refs = read_tsv(args.references)
     atypical = {r["accession"] for r in refs if r.get("atypical") == "True" or r["accession"] in {r2["closest_accession"] for r2 in rows if r2.get("atypical") == "True"}}
-    targets = [r for r in rows if r["status"] == "ok" and r["gyrA_matches_gtdb"] == "False"]
+    excluded: list[str] = []
+
+    def clean(r: dict[str, str], record: bool) -> bool:
+        """Contamination filter; only the disagreeing samples are recorded as excluded (control candidates are just skipped)."""
+        c = checkm_contamination(public_assemblies(r["bioproject"]), r["sample"])
+        if c is None or c > args.max_contamination:
+            if record:
+                excluded.append(f"{r['sample']} (CheckM contamination {'n/a' if c is None else f'{c:.2f}'} %)")
+            return False
+        return True
+
+    targets = [r for r in rows if r["status"] == "ok" and r["gyrA_matches_gtdb"] == "False" and clean(r, True)]
     # controls: concordant, exact reference haplotype, same project as the targets, one per species
     projects = {r["bioproject"] for r in targets}
     controls: list[dict[str, str]] = []
     for sp in ("kansasii", "persicum"):
         cand = [r for r in rows if r["bioproject"] in projects and r["gtdb_species"] == sp and r["status"] == "ok"
                 and r["gyrA_matches_gtdb"] == "True" and r["exact_match"] != "" and r["atypical"] == "False"]
-        controls += cand[: args.controls]
-    print(f"{len(targets)} disagreeing samples, {len(controls)} controls", flush=True)
+        controls += [r for r in cand if clean(r, False)][: args.controls]
+    print(f"{len(targets)} disagreeing samples, {len(controls)} controls; excluded as contaminated: {excluded or 'none'}", flush=True)
 
     seqs = {lc: locus_sequences(lc, atypical, args.gyra_references) for lc in LOCI}
     out_rows: list[dict[str, str]] = []
@@ -241,6 +253,7 @@ def main() -> None:
     write("diagnostic_sites.tsv", site_rows)
     write("read_haplotypes.tsv", hap_rows)
     lines = [f"thresholds: base quality >= {MIN_BASEQ}, MAPQ >= {MIN_MAPQ}, site depth >= {MIN_DEPTH}, pure >= {PURE}, mixed minor >= {MIXED}",
+             f"excluded (CheckM contamination > {args.max_contamination} % or missing): {', '.join(excluded) or 'none'}",
              "verdict per sample (disagreeing samples first, then controls):"]
     for r in targets + controls:
         lines.append(f"  {r['sample']}: GTDB {r['gtdb_species']}, assembly gyrA {r['closest_species']} -> {verdicts[r['sample']]}")
