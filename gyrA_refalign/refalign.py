@@ -23,7 +23,7 @@ from Bio.Seq import Seq
 
 K = 15
 # GTDB kansasii genomes with a persicum-like hsp65 (11 SNPs in the 441 bp amplicon) that are
-# M. kansasii by ANI and at every other locus (LIT.md). hsp65 alone would call them persicum, so a read
+# M. kansasii by ANI and at every other locus (kansasii-docs/docs/LIT.md). hsp65 alone would call them persicum, so a read
 # matching them is reported as kansasii with an "atypical hsp65" note, not silently as persicum.
 # The reference strain of each species (= the 7 genomes of kansasii_complex_gtdb_representatives): ATCC 12478,
 # AFPC-000227, MK142, MK13, MK41, 241/15, DSM 43505. Figures show these, whatever the larger reference set is.
