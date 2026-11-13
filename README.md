@@ -15,10 +15,10 @@ Project isolates and public data are analysed and written separately.
 Run: `sbatch submit_gyrA.sbatch` (~30 min, 8 CPUs, env_mlsa). Status per sample: `ok`, `ambiguous` (second species within 2
 differences), `divergent` (< 98% identity to every reference), `low_coverage` (< 95% of the probe placed), `no_hit`.
 
-## Results (2026-10-25)
+## Results (run 2026-11-03)
 - References: 72/72 genomes give a gyrA; leave-one-out 72/72 correct; the 3 Korean kansasii genomes (persicum-like hsp65) are kansasii at gyrA.
-- Project: gyrA species = WGS species in 171/171 callable uncontaminated isolates; no kansasii isolate is persicum-like at gyrA (28 persicum-like are all WGS persicum). Not callable: -010, -021, -055, -113 (low coverage; -010/-021/-113 contaminated), -184 (WGS *M. avium*, divergent).
-- Public (2026-11-03): public samples with CheckM contamination above 5 % (27 of 1039) are left out (`results/public/excluded_contaminated.tsv`); 29 samples without a CheckM result are kept. Of the 1012 left, 1006 are callable and 1000 agree with GTDB. 6 disagree, all PRJNA1078897: 4 GTDB-persicum samples have a kansasii gyrA (identical to a kansasii reference, ANI to persicum 99.5%), 2 GTDB-kansasii samples (SRR28038314, SRR28038483) have a persicum gyrA although their hsp65 is kansasii.
+- Project: gyrA species = WGS species in 171/171 callable uncontaminated isolates; no kansasii isolate is persicum-like at gyrA (the 27 persicum gyrA calls with status `ok` are all WGS persicum). Not callable: -010, -021, -055, -113 (low coverage; -010/-021/-113 contaminated), -184 (WGS *M. avium*, divergent).
+- Public: public samples with CheckM contamination above 5 % (27 of 1039) are left out (`results/public/excluded_contaminated.tsv`); 29 samples without a CheckM result are kept. Of the 1012 left, 1006 are callable and 1000 agree with GTDB. 6 disagree, all PRJNA1078897: 4 GTDB-persicum samples have a kansasii gyrA (identical to a kansasii reference, ANI to persicum 99.5%), 2 GTDB-kansasii samples (SRR28038314, SRR28038483) have a persicum gyrA although their hsp65 is kansasii.
 - 6 public samples are too fragmented for gyrA (low_coverage).
 - Public samples are filtered by `PUBLIC_MAX_CONTAMINATION` (5 %, CheckM `3_quality/checkM/checkm_output.tsv`) in 03, 04 and 05; project isolates are not (see `hsp65-refalign/CLAUDE.md`).
 
