@@ -22,8 +22,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo root: the gyrA_refalign package
 
-from gyrA_refalign import OUTPUT_PUBLIC, OUTPUT_PUBLIC_READS, PUBLIC_MAX_CONTAMINATION  # noqa: E402
-from gyrA_refalign.kansasii_paths import ATYPICAL_HSP65_GENOMES, HSP65_AMPLICONS, PUBLIC_READS, public_assemblies  # noqa: E402
+from gyrA_refalign import OUTPUT_PUBLIC, OUTPUT_PUBLIC_READS  # noqa: E402
+from gyrA_refalign.kansasii_paths import ATYPICAL_HSP65_GENOMES, HSP65_AMPLICONS, MAX_CHECKM_CONTAMINATION, PUBLIC_READS, public_assemblies  # noqa: E402
 from gyrA_refalign.tools import checkm_contamination, map_reads, read_fasta, read_tsv, run  # noqa: E402
 
 MAP_REF = "GCF_000157895.3"  # M. kansasii ATCC 12478, the kansasii reference strain
@@ -101,7 +101,7 @@ def main() -> None:
     ap.add_argument("--samples", type=Path, default=OUTPUT_PUBLIC / "samples.tsv")
     ap.add_argument("--references", type=Path, default=OUTPUT_PUBLIC / "reference_genomes.tsv")
     ap.add_argument("--extra", nargs="*", default=["SRR28038296"], help="further public samples (default: the Korean-type kansasii SRR28038296)")
-    ap.add_argument("--max-contamination", type=float, default=PUBLIC_MAX_CONTAMINATION, help="CheckM contamination (%%) above which a sample is excluded")
+    ap.add_argument("--max-contamination", type=float, default=MAX_CHECKM_CONTAMINATION, help="CheckM contamination (%%) above which a sample is excluded")
     ap.add_argument("--out", type=Path, default=OUTPUT_PUBLIC_READS)
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)

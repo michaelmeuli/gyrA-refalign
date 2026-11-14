@@ -15,9 +15,9 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo root: the gyrA_refalign package
 
-from gyrA_refalign import OUTPUT_PUBLIC, PUBLIC_MAX_CONTAMINATION  # noqa: E402
+from gyrA_refalign import OUTPUT_PUBLIC  # noqa: E402
 from gyrA_refalign.gyra import call_many  # noqa: E402
-from gyrA_refalign.kansasii_paths import GYRA_REFERENCES, PUBLIC_PROJECTS, SPECIES, public_assemblies  # noqa: E402
+from gyrA_refalign.kansasii_paths import GYRA_REFERENCES, MAX_CHECKM_CONTAMINATION, PUBLIC_PROJECTS, SPECIES, public_assemblies  # noqa: E402
 from gyrA_refalign.tools import checkm_contamination  # noqa: E402
 
 
@@ -30,7 +30,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("projects", nargs="*", default=PUBLIC_PROJECTS, help="public BioProjects (default: the four of the project)")
     ap.add_argument("--gyra-references", type=Path, default=GYRA_REFERENCES, help="<accession>_gyrA.fasta of the 72 genomes (from 01)")
-    ap.add_argument("--max-contamination", type=float, default=PUBLIC_MAX_CONTAMINATION,
+    ap.add_argument("--max-contamination", type=float, default=MAX_CHECKM_CONTAMINATION,
                     help="CheckM contamination (%%) above which a sample is left out of all results (written to excluded_contaminated.tsv)")
     ap.add_argument("--out", type=Path, default=OUTPUT_PUBLIC)
     args = ap.parse_args()

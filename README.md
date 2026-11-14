@@ -18,9 +18,9 @@ differences), `divergent` (< 98% identity to every reference), `low_coverage` (<
 ## Results (run 2026-11-03)
 - References: 72/72 genomes give a gyrA; leave-one-out 72/72 correct; the 3 Korean kansasii genomes (persicum-like hsp65) are kansasii at gyrA.
 - Project: gyrA species = WGS species in 171/171 callable uncontaminated isolates; no kansasii isolate is persicum-like at gyrA (the 27 persicum gyrA calls with status `ok` are all WGS persicum). Not callable: -010, -021, -055, -113 (low coverage; -010/-021/-113 contaminated), -184 (WGS *M. avium*, divergent).
-- Public: public samples with CheckM contamination above 5 % (27 of 1039) are left out (`results/public/excluded_contaminated.tsv`); 29 samples without a CheckM result are kept. Of the 1012 left, 1006 are callable and 1000 agree with GTDB. 6 disagree, all PRJNA1078897: 4 GTDB-persicum samples have a kansasii gyrA (identical to a kansasii reference, ANI to persicum 99.5%), 2 GTDB-kansasii samples (SRR28038314, SRR28038483) have a persicum gyrA although their hsp65 is kansasii.
+- Public: public samples with CheckM contamination above 5 % (29 of 1039) are left out (`results/public/excluded_contaminated.tsv`); every sample has a CheckM result. Of the 1010 left, 1004 are callable and 998 agree with GTDB. 6 disagree, all PRJNA1078897: 4 GTDB-persicum samples have a kansasii gyrA (identical to a kansasii reference, ANI to persicum 99.5%), 2 GTDB-kansasii samples (SRR28038314, SRR28038483) have a persicum gyrA although their hsp65 is kansasii.
 - 6 public samples are too fragmented for gyrA (low_coverage).
-- Public samples are filtered by `PUBLIC_MAX_CONTAMINATION` (5 %, CheckM `3_quality/checkM/checkm_output.tsv`) in 03, 04 and 05; project isolates are not (see `hsp65-refalign/CLAUDE.md`).
+- Public samples are filtered by `MAX_CHECKM_CONTAMINATION` (`kansasii_paths`; 5 %, CheckM `3_quality/checkM/checkm_output.tsv`) in 03, 04 and 05; project isolates are not (see `hsp65-refalign/CLAUDE.md`).
 
 ### hsp65 amplicon from the reads (05)
 Differences (of 441 bp) between the read consensus and the closest reference amplicon of each group; contaminated samples are left out.

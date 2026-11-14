@@ -24,8 +24,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo root: the gyrA_refalign package
 
-from gyrA_refalign import OUTPUT_PUBLIC, OUTPUT_PUBLIC_READS, PUBLIC_MAX_CONTAMINATION  # noqa: E402
-from gyrA_refalign.kansasii_paths import GYRA_REFERENCES, OUT_MLSA, PUBLIC_READS, public_assemblies  # noqa: E402
+from gyrA_refalign import OUTPUT_PUBLIC, OUTPUT_PUBLIC_READS  # noqa: E402
+from gyrA_refalign.kansasii_paths import GYRA_REFERENCES, MAX_CHECKM_CONTAMINATION, OUT_MLSA, PUBLIC_READS, public_assemblies  # noqa: E402
 from gyrA_refalign.tools import checkm_contamination, read_fasta, read_tsv, run  # noqa: E402
 
 LOCI = ["gyrA", "rpoB", "recA", "tuf"]  # hsp65 is done in 05 on the whole amplicon; one fixed site is too few
@@ -171,7 +171,7 @@ def main() -> None:
     ap.add_argument("--references", type=Path, default=OUTPUT_PUBLIC / "reference_genomes.tsv")
     ap.add_argument("--gyra-references", type=Path, default=GYRA_REFERENCES)
     ap.add_argument("--controls", type=int, default=1, help="concordant controls per species (default 1)")
-    ap.add_argument("--max-contamination", type=float, default=PUBLIC_MAX_CONTAMINATION, help="CheckM contamination (%%) above which a sample is excluded")
+    ap.add_argument("--max-contamination", type=float, default=MAX_CHECKM_CONTAMINATION, help="CheckM contamination (%%) above which a sample is excluded")
     ap.add_argument("--out", type=Path, default=OUTPUT_PUBLIC_READS)
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)

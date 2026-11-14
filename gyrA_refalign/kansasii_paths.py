@@ -1,4 +1,4 @@
-"""Shared constants of the kansasii project: paths, species, colours, sample identifiers.
+"""Shared constants of the kansasii project: paths, species, colours, sample identifiers, the CheckM contamination threshold.
 
 CANONICAL COPY: kansasii-docs/templates/kansasii_paths.py. Every repo vendors this file unchanged
 (next to its code, so it imports as `kansasii_paths`); `repos/check_sync.sh` flags drift and `--fix` restores it.
@@ -83,6 +83,9 @@ PUBLIC_READS = ILLUMINA_DIR / "public"  # <BioProject>/metadata.tsv, selected.ts
 # ----------------------------------------------------------------------------------------- pipeline (runs/) results
 ASSEMBLIES = RUNS / "mkan329" / "assembly" / "results"  # <PROBENNUMMER>/1_unicycler/<PROBENNUMMER>.fasta
 PUBLIC_PROJECTS = ["PRJNA1078897", "PRJNA1048499", "PRJNA845115", "PRJNA323639"]
+# CheckM contamination (%) above which a sample counts as contaminated: own isolates get contamination_flag / excluded
+# (immensekansasii 06), public samples are left out (hsp65-refalign 05, gyrA-refalign 03-05). The only place it is set.
+MAX_CHECKM_CONTAMINATION = 5.0
 
 
 def public_assemblies(project: str) -> Path:
