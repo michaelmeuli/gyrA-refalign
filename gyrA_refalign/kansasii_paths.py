@@ -46,6 +46,7 @@ OUT_GYRA = OUTPUT_ROOT / "gyrA-refalign"
 OUT_HSP65 = OUTPUT_ROOT / "hsp65-refalign"
 OUT_IMM = OUTPUT_ROOT / "immensekansasii"
 OUT_MICROSYNTH = OUTPUT_ROOT / "sanger-microsynth"
+OUT_COSMIC = OUTPUT_ROOT / "cosmic-seq"
 MANIFEST_SCRIPT = REPOS / "kansasii-docs" / "bin" / "write_manifest.sh"
 
 # ---------------------------------------------------------------------------------------------- reference genomes
@@ -96,6 +97,7 @@ def public_assemblies(project: str) -> Path:
 
 # ------------------------------------------------------------------------------------ protocols and external software
 HSP65_PROTOCOL = DATA / "protocols" / "32.43505-4-Mykobakterien NTM 65kDa.docx"  # TB-11 / TB-12(w) primers
+HANDBOOK_DIR = DATA / "Arbeitshandbücher"  # lab handbooks (Mol, Mykobakteriologie): source of the primers in cosmic-seq
 # not part of the project: pipeline databases and the container cache of the IMMENSE pipeline
 IMMENSE_DEPENDENCIES = Path("/shares/sander.imm.uzh/software/pipelines/IMMense/IMMense_dependencies")
 IMMENSE_CONTAINERS = IMMENSE_DEPENDENCIES / "containers"
