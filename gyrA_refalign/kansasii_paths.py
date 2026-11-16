@@ -75,6 +75,7 @@ MIC_CSV = IMM_DIR / "mic.csv"
 SCREENING_MAP_LINK = IMM_DIR / "screening_map_link.csv"  # immensekansasii/scripts/02
 SCREENING_MAP_RESULTS = IMM_DIR / "screening_map_results.csv"  # immensekansasii/scripts/06
 RIDOM_CLUSTERS = IMM_DIR / "ridom-clusters.csv"  # Ridom SeqSphere cgMLST export, joined in immensekansasii/scripts/06
+RIDOM_COMPARISON = IMM_DIR / "ridom-comparison-table.csv"  # Ridom allele table with good targets %; `excluded` in immensekansasii/scripts/06
 SCREENING_MAP_AST_JC = IMM_DIR / "screening_map_ast_jc.csv"
 SANGER_LINK_DIR = DATA / "sanger" / "seq_kansasii"  # .ab1 symlinks (mlsa-kansasii/scripts/03)
 ILLUMINA_DIR = DATA / "illumina"
