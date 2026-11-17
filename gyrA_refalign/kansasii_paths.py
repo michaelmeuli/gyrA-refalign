@@ -69,6 +69,13 @@ ATCC12478_ACCESSION = "GCF_000157895.3"
 ATCC12478_DIR = NCBI_DATASET / ATCC12478_ACCESSION
 ATCC12478_FASTA = ATCC12478_DIR / f"{ATCC12478_ACCESSION}_ASM15789v2_genomic.fna"
 ATCC12478_GFF = ATCC12478_DIR / "genomic.gff"
+# the GTDB representative genome of each complex species (accession -> species; ATCC 12478 first): the 7 genomes of
+# GTDB_REPRESENTATIVES, the Ridom cgMLST references and the reference strains shown in refalign figures
+GTDB_REPRESENTATIVE_GENOMES = {
+    "GCF_000157895.3": "kansasii", "GCF_002086675.1": "persicum", "GCF_900566075.1": "pseudokansasii",
+    "GCF_900566085.1": "attenuatum", "GCF_900566055.1": "innocens", "GCF_002705925.1": "ostraviense",
+    "GCF_002102175.1": "gastri",
+}
 
 # -------------------------------------------------------------------------------------------- lab tables and reads
 IMM_DIR = DATA / "imm"

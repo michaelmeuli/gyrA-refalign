@@ -21,18 +21,19 @@ from Bio import SeqIO
 from Bio.Align import PairwiseAligner
 from Bio.Seq import Seq
 
+from .kansasii_paths import ATYPICAL_HSP65_GENOMES, GTDB_REPRESENTATIVE_GENOMES, SPECIES
+
 K = 15
 # GTDB kansasii genomes with a persicum-like hsp65 (11 SNPs in the 441 bp amplicon) that are
 # M. kansasii by ANI and at every other locus (kansasii-docs/docs/LIT.md). hsp65 alone would call them persicum, so a read
 # matching them is reported as kansasii with an "atypical hsp65" note, not silently as persicum.
 # The reference strain of each species (= the 7 genomes of kansasii_complex_gtdb_representatives): ATCC 12478,
 # AFPC-000227, MK142, MK13, MK41, 241/15, DSM 43505. Figures show these, whatever the larger reference set is.
-REPRESENTATIVES = frozenset({"GCF_000157895.3", "GCF_002086675.1", "GCF_900566075.1", "GCF_900566055.1",
-                             "GCF_900566085.1", "GCF_002705925.1", "GCF_002102175.1"})
-ATYPICAL_HSP65 = frozenset({"GCF_002705785.1", "GCF_002705825.1", "GCF_002705865.1"})
+REPRESENTATIVES = frozenset(GTDB_REPRESENTATIVE_GENOMES)
+ATYPICAL_HSP65 = frozenset(ATYPICAL_HSP65_GENOMES)
 PAD = 40  # bases of reference added on each side of the seeded window
 MIN_SEEDS = 5
-SPECIES_ORDER = ["kansasii", "persicum", "pseudokansasii", "innocens", "attenuatum", "ostraviense", "gastri"]
+SPECIES_ORDER = SPECIES
 _LUT = np.full(256, 255, dtype=np.uint8)
 for _i, _b in enumerate(b"ACGT"):
     _LUT[_b] = _LUT[_b + 32] = _i

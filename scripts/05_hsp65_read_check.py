@@ -23,10 +23,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo root: the gyrA_refalign package
 
 from gyrA_refalign import OUTPUT_PUBLIC, OUTPUT_PUBLIC_READS  # noqa: E402
-from gyrA_refalign.kansasii_paths import ATYPICAL_HSP65_GENOMES, HSP65_AMPLICONS, MAX_CHECKM_CONTAMINATION, PUBLIC_READS, public_assemblies  # noqa: E402
+from gyrA_refalign.kansasii_paths import ATCC12478_ACCESSION, ATYPICAL_HSP65_GENOMES, HSP65_AMPLICONS, MAX_CHECKM_CONTAMINATION, PUBLIC_READS, public_assemblies  # noqa: E402
 from gyrA_refalign.tools import checkm_contamination, map_reads, read_fasta, read_tsv, run  # noqa: E402
 
-MAP_REF = "GCF_000157895.3"  # M. kansasii ATCC 12478, the kansasii reference strain
+MAP_REF = ATCC12478_ACCESSION  # M. kansasii ATCC 12478, the kansasii reference strain
 MIN_BASEQ = 20
 MIN_MAPQ = 20
 MIN_DEPTH = 10  # reads at a position; fewer is not called
